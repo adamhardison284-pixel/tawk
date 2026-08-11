@@ -176,7 +176,8 @@ while True:
             txt = driver.find_element(By.XPATH, "//textarea")
 
             textareas = driver.find_elements(By.TAG_NAME, "textarea")
-
+            
+            driver.save_screenshot("full_page.png")
             print(f"Found {len(textareas)} textarea(s)")
             for ta in driver.find_elements(By.TAG_NAME, "textarea"):
                 if ta.is_displayed() and ta.is_enabled():
