@@ -176,8 +176,17 @@ while True:
             txt = driver.find_element(By.XPATH, "//textarea")
 
             textareas = driver.find_elements(By.TAG_NAME, "textarea")
+            # Create a dedicated directory if it doesn't exist
+            os.makedirs("screenshots", exist_ok=True)
             
-            driver.save_screenshot("full_page.png")
+            # Build an absolute, explicit path for the file
+            screenshot_path = os.path.join(os.getcwd(), "screenshots", f"screenshot_{EMAIL}.png")
+            
+            # Force a window size extension to ensure the page renders 
+            driver.set_window_size(1920, 1080)
+            driver.save_screenshot(screenshot_path)
+            print(f"Captured screen successfully at: {screenshot_path}")
+
             print(f"Found {len(textareas)} textarea(s)")
             for ta in driver.find_elements(By.TAG_NAME, "textarea"):
                 if ta.is_displayed() and ta.is_enabled():
