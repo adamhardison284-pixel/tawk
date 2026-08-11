@@ -23,20 +23,34 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install Chrome
+      - name: Install Chrome, Tor, and Privoxy
         run: |
           sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y google-chrome-stable tor privoxy
+
+      - name: Configure and Start Tor and Privoxy
+        run: |
+          # Configure Privoxy to route through Tor SOCKS5 proxy
+          echo "forward-socks5t / 127.0.0.1:9050 ." | sudo tee -a /etc/privoxy/config
+          
+          # Restart services to apply configurations
+          sudo systemctl restart tor
+          sudo systemctl restart privoxy
+          
+          # Wait a few seconds for Tor to connect to the network
+          sleep 10
 
       - name: Show versions
         run: |
           python --version
           google-chrome --version
+          tor --version
           
       - name: Remove old ChromeDriver
         run: |
           sudo rm -f /usr/bin/chromedriver
           sudo rm -f /usr/local/bin/chromedriver
+          
       - name: Run Selenium
         run: |
           python -u tawk_headless.py
