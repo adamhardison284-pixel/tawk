@@ -32,7 +32,11 @@ jobs:
         run: |
           python --version
           google-chrome --version
-
+          
+      - name: Remove old ChromeDriver
+        run: |
+          sudo rm -f /usr/bin/chromedriver
+          sudo rm -f /usr/local/bin/chromedriver
       - name: Run Selenium
         run: |
           python tawk_headless.py
