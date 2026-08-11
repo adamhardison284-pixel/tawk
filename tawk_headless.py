@@ -106,7 +106,7 @@ while True:
             options.add_argument("--disable-gpu")
             options.add_argument("--no-sandbox")
             options.add_argument("--disable-dev-shm-usage")
-
+            options.add_argument("--proxy-server=http://127.0.0.1:8118")
             options.add_argument(
                 f"--user-data-dir={profile_dir}"
             )
