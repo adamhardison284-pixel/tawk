@@ -39,6 +39,13 @@ jobs:
           
           # Wait a few seconds for Tor to connect to the network
           sleep 10
+          
+      - name: Archive Production Screenshots
+        if: always() # Runs even if the script fails or crashes
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-screenshots
+          path: "*.png" # Uploads all captured .png files
 
       - name: Show versions
         run: |
