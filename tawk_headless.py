@@ -125,6 +125,17 @@ while True:
         else:
             print("Badge not found or text isn't 1")
             
+        # Create a dedicated directory if it doesn't exist
+        os.makedirs("screenshots", exist_ok=True)
+        
+        # Build an absolute, explicit path for the file
+        screenshot_path = os.path.join(os.getcwd(), "screenshots", f"screenshot_{EMAIL}.png")
+        
+        # Force a window size extension to ensure the page renders 
+        driver.set_window_size(1920, 1080)
+        driver.save_screenshot(screenshot_path)
+        print(f"Captured screen successfully at: {screenshot_path}")
+        
         driver.switch_to.default_content()
         chat_button = wait.until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, "div.chat-button"))
@@ -175,16 +186,6 @@ while True:
         txt = driver.find_element(By.XPATH, "//textarea")
 
         textareas = driver.find_elements(By.TAG_NAME, "textarea")
-        # Create a dedicated directory if it doesn't exist
-        os.makedirs("screenshots", exist_ok=True)
-        
-        # Build an absolute, explicit path for the file
-        screenshot_path = os.path.join(os.getcwd(), "screenshots", f"screenshot_{EMAIL}.png")
-        
-        # Force a window size extension to ensure the page renders 
-        driver.set_window_size(1920, 1080)
-        driver.save_screenshot(screenshot_path)
-        print(f"Captured screen successfully at: {screenshot_path}")
 
         print(f"Found {len(textareas)} textarea(s)")
         for ta in driver.find_elements(By.TAG_NAME, "textarea"):
