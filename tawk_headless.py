@@ -188,18 +188,6 @@ for site in sites:
             txt = driver.find_element(By.XPATH, "//textarea")
 
             textareas = driver.find_elements(By.TAG_NAME, "textarea")
-			"""
-            # Create a dedicated directory if it doesn't exist
-            os.makedirs("screenshots", exist_ok=True)
-            
-            # Build an absolute, explicit path for the file
-            screenshot_path = os.path.join(os.getcwd(), "screenshots", f"screenshot_{EMAIL}.png")
-            
-            # Force a window size extension to ensure the page renders 
-            driver.set_window_size(1920, 1080)
-            driver.save_screenshot(screenshot_path)
-            print(f"Captured screen successfully at: {screenshot_path}")
-			"""
 
             print(f"Found {len(textareas)} textarea(s)")
             for ta in driver.find_elements(By.TAG_NAME, "textarea"):
