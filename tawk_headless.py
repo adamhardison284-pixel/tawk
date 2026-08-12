@@ -33,6 +33,18 @@ URL = "https://free-iptv-2026.netlify.app/"
 SUBJECT = "Win 1000$ Amazon Gift Card"
 MESSAGE = " "
 
+sites = 
+[
+	"https://asmtarek192.netlify.app",
+	"https://asmtarek191.netlify.app",
+	"https://anwerjamal78692.netlify.app",
+	"https://amandawilly1863.netlify.app",
+	"https://alexis11.netlify.app",
+	"https://welcomeworld1.netlify.app",
+	"https://ahsankhan1.netlify.app",
+	"https://ahmadhomani.netlify.app",
+	"https://free-iptv-2026.netlify.app/"
+]
 
 def find_tawk_badge(driver, timeout=30):
     end = time.time() + timeout
@@ -77,7 +89,8 @@ def find_tawk_badge(driver, timeout=30):
 # Start browser
 # -----------------------------
 GAS_URL = "https://script.google.com/macros/s/AKfycbywZwu_IQws8T01Jit2-ijsNHxsEKdrtUV0kd24VAGxz9YEbm8oHSDpD87eRdzYBuz-/exec"
-while True:
+for site in sites:
+    URL = site
     profile_dir = tempfile.mkdtemp(prefix="chrome-profile-")
     response = None
     while True:
@@ -91,113 +104,145 @@ while True:
             break
         except:
             pass
-    data = response.json()
-    EMAIL = None
-    if data["success"]:
-        EMAIL = data["email"]
-        print('Email: ', EMAIL)
-      
-        
-        options = webdriver.ChromeOptions()
-      
-        options.add_argument("--headless=new")
-        options.add_argument("--window-size=1920,1080")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--proxy-server=http://127.0.0.1:8118")
-        options.add_argument(
-            f"--user-data-dir={profile_dir}"
-        )
-        options.add_argument(
-            "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/143.0.0.0 Safari/537.36"
-        )
-        
-        driver = webdriver.Chrome(options=options)
-        driver.get(URL)
-
-        wait = WebDriverWait(driver, 30)
-        #time.sleep(50000)
-        if find_tawk_badge(driver):
-            print("Badge is 1")
-        else:
-            print("Badge not found or text isn't 1")
+    try:
+        data = response.json()
+        EMAIL = None
+        if data["success"]:
+            EMAIL = data["email"]
+            print('Email: ', EMAIL)
+          
             
-        # Create a dedicated directory if it doesn't exist
-        os.makedirs("screenshots", exist_ok=True)
-        
-        # Build an absolute, explicit path for the file
-        screenshot_path = os.path.join(os.getcwd(), "screenshots", f"screenshot_{EMAIL}.png")
-        
-        # Force a window size extension to ensure the page renders 
-        driver.set_window_size(1920, 1080)
-        driver.save_screenshot(screenshot_path)
-        print(f"Captured screen successfully at: {screenshot_path}")
-        
-        driver.switch_to.default_content()
-        chat_button = wait.until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, "div.chat-button"))
-        )
-        driver.execute_script("arguments[0].click();", chat_button)
-        time.sleep(1)
+            options = webdriver.ChromeOptions()
+          
+            options.add_argument("--headless=new")
+            options.add_argument("--window-size=1920,1080")
+            options.add_argument("--disable-gpu")
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
+            #options.add_argument("--proxy-server=http://127.0.0.1:8118")
+            options.add_argument(
+                f"--user-data-dir={profile_dir}"
+            )
+            options.add_argument(
+                "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/143.0.0.0 Safari/537.36"
+            )
+            
+            driver = webdriver.Chrome(options=options)
+            driver.get(URL)
 
-        # Wait a few seconds for Tawk to load
-        wait.until(
-            EC.presence_of_element_located((By.TAG_NAME, "iframe"))
-        )
-
-        # -------------------------------------------------------
-        # Find the Tawk iframe
-        # -------------------------------------------------------
-        iframes = driver.find_elements(By.TAG_NAME, "iframe")
-
-        found = False
-
-        for iframe in iframes:
+            wait = WebDriverWait(driver, 10)
+            #time.sleep(50000)
+            if find_tawk_badge(driver):
+                print("Badge is 1")
+            else:
+                print("Badge not found or text isn't 1")
+                
             driver.switch_to.default_content()
+            chat_button = wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "div.chat-button"))
+            )
+            driver.execute_script("arguments[0].click();", chat_button)
+            time.sleep(1)
 
-            try:
-                driver.switch_to.frame(iframe)
+            # Wait a few seconds for Tawk to load
+            wait.until(
+                EC.presence_of_element_located((By.TAG_NAME, "iframe"))
+            )
 
-                # Check if the offline form exists
-                if driver.find_element(By.XPATH, "//input[@aria-placeholder='Subject']"):
-                    found = True
+            # -------------------------------------------------------
+            # Find the Tawk iframe
+            # -------------------------------------------------------
+            iframes = driver.find_elements(By.TAG_NAME, "iframe")
+
+            found = False
+
+            for iframe in iframes:
+                driver.switch_to.default_content()
+
+                try:
+                    driver.switch_to.frame(iframe)
+
+                    # Check if the offline form exists
+                    if driver.find_element(By.XPATH, "//input[@aria-placeholder='Subject']"):
+                        found = True
+                        break
+
+                except:
+                    pass
+
+            if not found:
+                print("Offline form not found. iframe length: ", len(iframes))
+                driver.quit()
+                exit()
+
+            # -------------------------------------------------------
+            # Fill the form
+            # -------------------------------------------------------
+
+            driver.find_element(By.XPATH, "//input[@aria-placeholder='Name']").send_keys(EMAIL)
+            driver.find_element(By.XPATH, "//input[@aria-placeholder='Email']").send_keys(EMAIL)
+
+            driver.find_element(By.XPATH, "//input[@aria-placeholder='Subject']").send_keys(SUBJECT)
+
+            txt = driver.find_element(By.XPATH, "//textarea")
+
+            textareas = driver.find_elements(By.TAG_NAME, "textarea")
+            # Create a dedicated directory if it doesn't exist
+            os.makedirs("screenshots", exist_ok=True)
+            
+            # Build an absolute, explicit path for the file
+            screenshot_path = os.path.join(os.getcwd(), "screenshots", f"screenshot_{EMAIL}.png")
+            
+            # Force a window size extension to ensure the page renders 
+            driver.set_window_size(1920, 1080)
+            driver.save_screenshot(screenshot_path)
+            print(f"Captured screen successfully at: {screenshot_path}")
+
+            print(f"Found {len(textareas)} textarea(s)")
+            for ta in driver.find_elements(By.TAG_NAME, "textarea"):
+                if ta.is_displayed() and ta.is_enabled():
+                    ta.click()
+                    ta.send_keys(MESSAGE)
+                    parent = ta.find_element(By.XPATH, "..")
+                    next_sibling = parent.find_element(By.XPATH, "following-sibling::*[1]")
+                    next_sibling.click()
                     break
 
+            # Click submit
+            #driver.find_element(By.CSS_SELECTOR, "button[type='button']").click()
+
+            print("Form submitted successfully.")
+            
+            while True:
+                try:
+                    # Mark as sent
+                    r = requests.get(GAS_URL, params={
+                        "action": "sent",
+                        "email": EMAIL
+                    })
+                    print(r.json())
+                    break
+                except:
+                    pass
+    except:
+        while True:
+            try:
+                # Mark as pending
+                r = requests.get(GAS_URL, params={
+                    "action": "pending",
+                    "email": EMAIL
+                })
+                print(r.json())
+                break
             except:
                 pass
-
-        if not found:
-            print("Offline form not found. iframe length: ", len(iframes))
+    while True:
+        try:
+            driver.close()
             driver.quit()
-            exit()
-
-        # -------------------------------------------------------
-        # Fill the form
-        # -------------------------------------------------------
-
-        driver.find_element(By.XPATH, "//input[@aria-placeholder='Name']").send_keys(EMAIL)
-        driver.find_element(By.XPATH, "//input[@aria-placeholder='Email']").send_keys(EMAIL)
-
-        driver.find_element(By.XPATH, "//input[@aria-placeholder='Subject']").send_keys(SUBJECT)
-
-        txt = driver.find_element(By.XPATH, "//textarea")
-
-        textareas = driver.find_elements(By.TAG_NAME, "textarea")
-
-        print(f"Found {len(textareas)} textarea(s)")
-        for ta in driver.find_elements(By.TAG_NAME, "textarea"):
-            if ta.is_displayed() and ta.is_enabled():
-                ta.click()
-                ta.send_keys(MESSAGE)
-                parent = ta.find_element(By.XPATH, "..")
-                next_sibling = parent.find_element(By.XPATH, "following-sibling::*[1]")
-                next_sibling.click()
-                break
-
-        # Click submit
-        #driver.find_element(By.CSS_SELECTOR, "button[type='button']").click()
-
-        print("Form submitted successfully.")
+            shutil.rmtree(profile_dir, ignore_errors=True)
+            break
+        except:
+            pass
