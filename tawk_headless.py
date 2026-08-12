@@ -118,7 +118,7 @@ while True:
         driver = webdriver.Chrome(options=options)
         driver.get(URL)
 
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 30)
         #time.sleep(50000)
         if find_tawk_badge(driver):
             print("Badge is 1")
