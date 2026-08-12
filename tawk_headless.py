@@ -33,8 +33,7 @@ URL = "https://free-iptv-2026.netlify.app/"
 SUBJECT = "Win 1000$ Amazon Gift Card"
 MESSAGE = " "
 
-sites = 
-[
+sites = [
 	"https://asmtarek192.netlify.app",
 	"https://asmtarek191.netlify.app",
 	"https://anwerjamal78692.netlify.app",
