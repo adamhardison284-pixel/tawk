@@ -309,7 +309,7 @@ while True:
             
             GAS_URL_R = "https://xvdqarulxvrjumqkjmeb.supabase.co/functions/v1/release_email"
             query_params = {
-                "email": "example@gmail.com"
+                "email": em_pref
             }
             while True:
                 try:
