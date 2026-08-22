@@ -142,7 +142,7 @@ while True:
         except:
             print("get email tawk error")
         time.sleep(0.5)
-    
+    print('sites: ', sites)
     for site in sites:
         print("step: 1")
         URL = "https://" + site.split('@')[0] + ".netlify.app"
