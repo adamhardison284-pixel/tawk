@@ -137,7 +137,7 @@ while True:
             response = requests.get(GAS_URL_)
             data = response.json()
             if data.get("status_") == "success":
-                sites = result.get("emails", [])
+                sites = data.get("emails", [])
                 break
         except:
             print("get email tawk error")
