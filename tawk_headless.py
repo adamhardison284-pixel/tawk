@@ -129,201 +129,209 @@ while True:
     
     driver = webdriver.Chrome(options=options)
     inc = 0
-    while inc < 10:
-        data = None
-        GAS_URL_ = "https://xvdqarulxvrjumqkjmeb.supabase.co/functions/v1/get_email"
+    data = None
+    sites = None
+    GAS_URL_ = "https://xvdqarulxvrjumqkjmeb.supabase.co/functions/v1/get_ready_emails"
+    while True:
+        try:
+            response = requests.get(GAS_URL_)
+            data = response.json()
+            if data.get("status_") == "success":
+                sites = result.get("emails", [])
+                break
+        except:
+            print("get email tawk error")
+        time.sleep(0.5)
+    
+    for site in sites:
+        print("step: 1")
+        URL = "https://" + site.split('@')[0] + ".netlify.app"
+        print("URL: ", URL)
+        response = None
         while True:
             try:
-                response = requests.get(GAS_URL_)
-                data = response.json()
+                response = requests.get(GAS_URL, params={
+                    "action": "get"
+                })
                 break
             except:
-                print("get email tawk error")
+                print("get email api error")
             time.sleep(0.5)
-            
-        if data.get("status_") == "success":
-            print("step: 1")
-            em_pref = data['email']
-            URL = "https://" + em_pref.split('@')[0] + ".netlify.app"
-            print("URL: ", URL)
-            response = None
-            while True:
-                try:
-                    response = requests.get(GAS_URL, params={
-                        "action": "get"
-                    })
-                    break
-                except:
-                    print("get email api error")
-                time.sleep(0.5)
-            try:
-                data = response.json()
-                EMAIL = None
-                if data["success"]:
-                    EMAIL = data["email"]
-                    print('Email: ', EMAIL)
-                    
-                    driver.get(URL)
+        try:
+            data = response.json()
+            EMAIL = None
+            if data["success"]:
+                EMAIL = data["email"]
+                print('Email: ', EMAIL)
+                
+                driver.get(URL)
 
-                    wait = WebDriverWait(driver, 5)
-                    #time.sleep(50000)
-                    bdg_inc = 0
-                    already = False
-                    while True:
-                        if bdg_inc < 2:
-                            if find_tawk_badge(driver):
-                                print("Badge is 1")
-                                break
-                            else:
-                                print("Badge not found or text isn't 1")
-                                for log in driver.get_log("browser"):
-                                    if "tawk" in log["message"].lower() or "cors" in log["message"].lower():
-                                        print(log["message"])
-                                driver.refresh()
-                            bdg_inc = bdg_inc + 1
-                        else:
-                            already = True
-                            break
-                            
-                    print('already: ', already)
-                    if already == False:
-                        driver.switch_to.default_content()
-                        chat_button = wait.until(
-                            EC.element_to_be_clickable((By.CSS_SELECTOR, "div.chat-button"))
-                        )
-                        driver.execute_script("arguments[0].click();", chat_button)
-                        time.sleep(1)
-
-                        # Wait a few seconds for Tawk to load
-                        wait.until(
-                            EC.presence_of_element_located((By.TAG_NAME, "iframe"))
-                        )
-
-                        # -------------------------------------------------------
-                        # Find the Tawk iframe
-                        # -------------------------------------------------------
-                        iframes = driver.find_elements(By.TAG_NAME, "iframe")
-
-                        found = False
-
-                        for iframe in iframes:
-                            driver.switch_to.default_content()
-
-                            try:
-                                driver.switch_to.frame(iframe)
-
-                                # Check if the offline form exists
-                                if driver.find_element(By.XPATH, "//input[@aria-placeholder='Subject']"):
-                                    found = True
-                                    break
-
-                            except:
-                                pass
-
-                        if not found:
-                            print("Offline form not found. iframe length: ", len(iframes))
-                            driver.quit()
-                            exit()
-
-                        # -------------------------------------------------------
-                        # Fill the form
-                        # -------------------------------------------------------
-
-                        driver.find_element(By.XPATH, "//input[@aria-placeholder='Name']").send_keys(EMAIL)
-                        driver.find_element(By.XPATH, "//input[@aria-placeholder='Email']").send_keys(EMAIL)
-                        SUBJECT = random.choice(titles)
-                        driver.find_element(By.XPATH, "//input[@aria-placeholder='Subject']").send_keys(SUBJECT)
-
-                        txt = driver.find_element(By.XPATH, "//textarea")
-
-                        textareas = driver.find_elements(By.TAG_NAME, "textarea")
-
-                        print(f"Found {len(textareas)} textarea(s)")
-                        for ta in driver.find_elements(By.TAG_NAME, "textarea"):
-                            if ta.is_displayed() and ta.is_enabled():
-                                ta.click()
-                                ta.send_keys(MESSAGE)
-                                parent = ta.find_element(By.XPATH, "..")
-                                next_sibling = parent.find_element(By.XPATH, "following-sibling::*[1]")
-                                next_sibling.click()
-                                time.sleep(1)
-                                    
-                                break
-
-                        # Click submit
-                        #driver.find_element(By.CSS_SELECTOR, "button[type='button']").click()
-                        
-                        while True:
-                            red_texts = driver.find_elements(
-                                By.XPATH,
-                                "//*[contains(@class, 'tawk-text-red-1')]"
-                            )
-                            if len(red_texts) > 0:
-                                sites[inc][1] = False
-                                while True:
-                                    try:
-                                        # Mark as pending
-                                        r = requests.get(GAS_URL, params={
-                                            "action": "pending",
-                                            "email": EMAIL
-                                        })
-                                        print(r.json())
-                                        break
-                                    except:
-                                        pass
-                                break
-                            else:
-                                submitteds = driver.find_elements(
-                                    By.XPATH,
-                                    "//*[@class='tawk-text-regular-2']"
-                                )
-                                if len(submitteds) > 0:
-                                    if submitteds[0].text == "Your ticket has been submitted. Thank you!":
-                                        print("Form submitted successfully.")
-                                        while True:
-                                            try:
-                                                # Mark as sent
-                                                r = requests.get(GAS_URL, params={
-                                                    "action": "sent",
-                                                    "email": EMAIL
-                                                })
-                                                print(r.json())
-                                                break
-                                            except:
-                                                pass
-                                        break
-                                
-            except:
-                print("get email tawk error")
+                wait = WebDriverWait(driver, 5)
+                bdg_inc = 0
+                already = False
                 while True:
-                    try:
-                        # Mark as pending
-                        r = requests.get(GAS_URL, params={
-                            "action": "pending",
-                            "email": EMAIL
-                        })
-                        print(r.json())
+                    if bdg_inc < 2:
+                        if find_tawk_badge(driver):
+                            print("Badge is 1")
+                            break
+                        else:
+                            print("Badge not found or text isn't 1")
+                            for log in driver.get_log("browser"):
+                                if "tawk" in log["message"].lower() or "cors" in log["message"].lower():
+                                    print(log["message"])
+                            driver.refresh()
+                        bdg_inc = bdg_inc + 1
+                    else:
+                        already = True
                         break
-                    except:
-                        pass
                         
-            inc = inc + 1
-            
-            GAS_URL_R = "https://xvdqarulxvrjumqkjmeb.supabase.co/functions/v1/release_email"
-            query_params = {
-                "email": em_pref
-            }
+                print('already: ', already)
+                if already == False:
+                    driver.switch_to.default_content()
+                    chat_button = wait.until(
+                        EC.element_to_be_clickable((By.CSS_SELECTOR, "div.chat-button"))
+                    )
+                    driver.execute_script("arguments[0].click();", chat_button)
+                    time.sleep(1)
+
+                    # Wait a few seconds for Tawk to load
+                    wait.until(
+                        EC.presence_of_element_located((By.TAG_NAME, "iframe"))
+                    )
+
+                    # -------------------------------------------------------
+                    # Find the Tawk iframe
+                    # -------------------------------------------------------
+                    iframes = driver.find_elements(By.TAG_NAME, "iframe")
+
+                    found = False
+
+                    for iframe in iframes:
+                        driver.switch_to.default_content()
+
+                        try:
+                            driver.switch_to.frame(iframe)
+
+                            # Check if the offline form exists
+                            if driver.find_element(By.XPATH, "//input[@aria-placeholder='Subject']"):
+                                found = True
+                                break
+
+                        except:
+                            pass
+
+                    if not found:
+                        print("Offline form not found. iframe length: ", len(iframes))
+                        driver.quit()
+                        exit()
+
+                    # -------------------------------------------------------
+                    # Fill the form
+                    # -------------------------------------------------------
+
+                    driver.find_element(By.XPATH, "//input[@aria-placeholder='Name']").send_keys(EMAIL)
+                    driver.find_element(By.XPATH, "//input[@aria-placeholder='Email']").send_keys(EMAIL)
+                    SUBJECT = random.choice(titles)
+                    driver.find_element(By.XPATH, "//input[@aria-placeholder='Subject']").send_keys(SUBJECT)
+
+                    txt = driver.find_element(By.XPATH, "//textarea")
+
+                    textareas = driver.find_elements(By.TAG_NAME, "textarea")
+
+                    print(f"Found {len(textareas)} textarea(s)")
+                    for ta in driver.find_elements(By.TAG_NAME, "textarea"):
+                        if ta.is_displayed() and ta.is_enabled():
+                            ta.click()
+                            ta.send_keys(MESSAGE)
+                            parent = ta.find_element(By.XPATH, "..")
+                            next_sibling = parent.find_element(By.XPATH, "following-sibling::*[1]")
+                            next_sibling.click()
+                            time.sleep(1)
+                                
+                            break
+
+                    # Click submit
+                    #driver.find_element(By.CSS_SELECTOR, "button[type='button']").click()
+                    
+                    while True:
+                        red_texts = driver.find_elements(
+                            By.XPATH,
+                            "//*[contains(@class, 'tawk-text-red-1')]"
+                        )
+                        if len(red_texts) > 0:
+                            while True:
+                                try:
+                                    # Mark as pending
+                                    r = requests.get("https://xvdqarulxvrjumqkjmeb.supabase.co/functions/v1/email_stop_time", params={
+                                        "email": site
+                                    })
+                                    print(r.json())
+                                    break
+                                except:
+                                    pass
+                                    
+                            while True:
+                                try:
+                                    # Mark as pending
+                                    r = requests.get(GAS_URL, params={
+                                        "action": "pending",
+                                        "email": EMAIL
+                                    })
+                                    print(r.json())
+                                    break
+                                except:
+                                    pass
+                            break
+                        else:
+                            submitteds = driver.find_elements(
+                                By.XPATH,
+                                "//*[@class='tawk-text-regular-2']"
+                            )
+                            if len(submitteds) > 0:
+                                if submitteds[0].text == "Your ticket has been submitted. Thank you!":
+                                    print("Form submitted successfully.")
+                                    while True:
+                                        try:
+                                            # Mark as sent
+                                            r = requests.get(GAS_URL, params={
+                                                "action": "sent",
+                                                "email": EMAIL
+                                            })
+                                            print(r.json())
+                                            break
+                                        except:
+                                            pass
+                                    break
+                else:
+                    print("get email tawk error")
+                    while True:
+                        try:
+                            # Mark as pending
+                            r = requests.get(GAS_URL, params={
+                                "action": "pending",
+                                "email": EMAIL
+                            })
+                            print(r.json())
+                            break
+                        except:
+                            pass
+                    
+                            
+        except:
+            print("get email tawk error")
             while True:
                 try:
-                    response_ = requests.get(GAS_URL_R, params=query_params)
-                    print(response_.json())
+                    # Mark as pending
+                    r = requests.get(GAS_URL, params={
+                        "action": "pending",
+                        "email": EMAIL
+                    })
+                    print(r.json())
                     break
                 except:
-                    print("email release tawk error")
-                time.sleep(0.5)
-            
-        else:
-            inc = inc + 1
+                    pass
+                    
+        inc = inc + 1
         
     while True:
         if driver is not None:
