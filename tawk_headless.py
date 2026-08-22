@@ -184,6 +184,7 @@ while True:
                         else:
                             already = True
                             
+                    print('already: ', already)
                     if already == False:
                         driver.switch_to.default_content()
                         chat_button = wait.until(
