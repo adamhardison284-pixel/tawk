@@ -183,6 +183,7 @@ while True:
                             bdg_inc = bdg_inc + 1
                         else:
                             already = True
+                            break
                             
                     print('already: ', already)
                     if already == False:
